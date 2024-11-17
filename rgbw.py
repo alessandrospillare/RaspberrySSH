@@ -1,0 +1,55 @@
+from flask import Flask, request, jsonify
+import pigpio
+import json
+
+
+app = Flask(__name__)
+pi = pigpio.pi()
+
+# {{url}}/led?status=on
+@app.route('/', methods=['GET'])
+def led():
+
+    red = int(request.args.get('red')) if (request.args.get('red')) else 0
+    green = int(request.args.get('green')) if (request.args.get('green')) else 0
+    blue = int(request.args.get('blue')) if (request.args.get('blue')) else 0
+    # white = int(request.args.get('white')) if (request.args.get('white')) else 0
+
+    pi.set_PWM_dutycycle(13, red)
+    pi.set_PWM_dutycycle(5, blue)
+    pi.set_PWM_dutycycle(6, green)
+    # pi.set_PWM_dutycycle(18, white)
+
+    # return jsonify({"red": red, "green": green, "blue": blue, "white": white})
+    with open('/var/www/html/rgbw/rgb.json', 'w') as f:
+        json.dump({"red": red, "green": green, "blue": blue}, f)
+    return jsonify({"red": red, "green": green, "blue": blue})
+
+
+# Separated white button for now so it can be controlled separately
+# Reading/writing to JSON file: https://stackabuse.com/reading-and-writing-json-to-a-file-in-python/
+@app.route('/cWhite', methods=['GET'])
+def cWhite():
+    white = int(request.args.get('cWhite')) if (request.args.get('cWhite')) else 0
+
+    pi.set_PWM_dutycycle(12, white)
+    with open('/var/www/html/rgbw/cWhite.json', 'w') as f:
+        json.dump({"cWhite": white}, f)
+    return jsonify({"cWhite": white})
+
+@app.route('/wWhite', methods=['GET'])
+def wWhite():
+    white = int(request.args.get('wWhite')) if (request.args.get('wWhite')) else 0
+
+    pi.set_PWM_dutycycle(26, white)
+    with open('/var/www/html/rgbw/wWhite.json', 'w') as f:
+        json.dump({"wWhite": white}, f)
+    return jsonify({"wWhite": white})
+
+
+@app.route('/getStatus', methods=['GET'])
+def get_status():
+    colors = str(request.args.get('colors'))
+
+    with open('/var/www/html/rgbw/' + colors + '.json', 'r') as f:
+        return json.load(f)
