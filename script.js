@@ -1,5 +1,5 @@
 let config = {
-    url: 'http://192.168.1.225',
+    url: 'http://192.168.178.160',
 };
 
 let currentColors = {};
@@ -138,7 +138,7 @@ $(document).ready(function() {
             url: `${config.url}/api/lr/cWhite?cWhite=${frequency}&${cacheBuster}`,
             method: 'GET',
             success: function(result) {
-                console.log(result);
+                // console.log(result);
             }
         });
     }
@@ -148,7 +148,7 @@ $(document).ready(function() {
             url: `${config.url}/api/lr/wWhite?wWhite=${frequency}&${cacheBuster}`,
             method: 'GET',
             success: function(result) {
-                console.log(result);
+                // console.log(result);
             }
         });
     }
@@ -216,9 +216,9 @@ $(document).ready(function() {
                     currentColors.blue = result.blue;
                     pickr.setColor(colors);
                 } else if(color == 'cWhite') {
-                    cWSlider.noUiSlider.set(Math.floor((result.white / 255) * 100));
+                    cWSlider.noUiSlider.set(Math.floor((result.cWhite / 255) * 100));
                 } else if(color == 'wWhite') {
-                    wWSlider.noUiSlider.set(Math.floor((result.white / 255) * 100));
+                    wWSlider.noUiSlider.set(Math.floor((result.wWhite / 255) * 100));
                 }
             },
         });
