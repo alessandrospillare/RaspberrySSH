@@ -1,23 +1,41 @@
 from flask import Flask, request, jsonify
-import pigpio
+import RPi.GPIO as GPIO
 import json
 
 
 app = Flask(__name__)
-pi = pigpio.pi()
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(5, GPIO.OUT)
+GPIO.setup(6, GPIO.OUT)
+GPIO.setup(12, GPIO.OUT)
+GPIO.setup(13, GPIO.OUT)
+GPIO.setup(26, GPIO.OUT)
+
+b = GPIO.PWM(5, 1000)
+g = GPIO.PWM(6, 1000)
+cW = GPIO.PWM(12, 1000)
+r = GPIO.PWM(13, 1000)
+wW = GPIO.PWM(26, 1000)
+
+r.start(0)
+b.start(0)
+g.start(0)
+cW.start(0)
+wW.start(0)
 
 # {{url}}/led?status=on
 @app.route('/', methods=['GET'])
 def led():
 
-    red = int(request.args.get('red')) if (request.args.get('red')) else 0
-    green = int(request.args.get('green')) if (request.args.get('green')) else 0
-    blue = int(request.args.get('blue')) if (request.args.get('blue')) else 0
+    red = round((int(request.args.get('red')))/2.55) if (request.args.get('red')) else 0
+    green = round((int(request.args.get('green')))/2.55) if (request.args.get('green')) else 0
+    blue = round((int(request.args.get('blue')))/2.55) if (request.args.get('blue')) else 0
     # white = int(request.args.get('white')) if (request.args.get('white')) else 0
 
-    pi.set_PWM_dutycycle(13, red)
-    pi.set_PWM_dutycycle(5, blue)
-    pi.set_PWM_dutycycle(6, green)
+    r.ChangeDutyCycle(red)
+    g.ChangeDutyCycle(green)
+    b.ChangeDutyCycle(blue)
     # pi.set_PWM_dutycycle(18, white)
 
     # return jsonify({"red": red, "green": green, "blue": blue, "white": white})
@@ -30,18 +48,18 @@ def led():
 # Reading/writing to JSON file: https://stackabuse.com/reading-and-writing-json-to-a-file-in-python/
 @app.route('/cWhite', methods=['GET'])
 def cWhite():
-    white = int(request.args.get('cWhite')) if (request.args.get('cWhite')) else 0
+    white = round((int(request.args.get('cWhite')))/2.55) if (request.args.get('cWhite')) else 0
 
-    pi.set_PWM_dutycycle(12, white)
+    cW.ChangeDutyCycle(white)
     with open('/var/www/html/rgbw/cWhite.json', 'w') as f:
         json.dump({"cWhite": white}, f)
     return jsonify({"cWhite": white})
 
 @app.route('/wWhite', methods=['GET'])
 def wWhite():
-    white = int(request.args.get('wWhite')) if (request.args.get('wWhite')) else 0
+    white = round((int(request.args.get('wWhite')))/2.55) if (request.args.get('wWhite')) else 0
 
-    pi.set_PWM_dutycycle(26, white)
+    wW.ChangeDutyCycle(white)
     with open('/var/www/html/rgbw/wWhite.json', 'w') as f:
         json.dump({"wWhite": white}, f)
     return jsonify({"wWhite": white})
